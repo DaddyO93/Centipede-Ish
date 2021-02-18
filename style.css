@@ -1,0 +1,34 @@
+#leftPaneCanvas {
+  position: absolute;
+  /* z-index: 1; */
+  background-color: green;
+  margin: 0;
+}
+
+#canvas {
+  z-index: 0;
+  position: absolute;
+  margin: 0;
+}
+
+basePosition {
+  margin: 0;
+  position: absolute;
+}
+
+leftPane {
+  background-color: blue;
+}
+
+objects {
+  z-index: 2;
+}
+
+rightPane {
+  background-color: cadetblue;
+}
+
+bottomPane {
+  position: absolute;
+  background-color: chartreuse;
+}
