@@ -22,38 +22,33 @@ class Pane {
 }
 
 class GameObject {
-  // constructor(x, y, objectImage, H, W, health, move) {
-  constructor(x, y, objectImage, H, W, health, move, reverse) {
+  constructor(x, y, objectImage, H, W, health, move) {
     this.x = x;
     this.y = y;
     this.image = objectImage;
     this.H = H;
     this.W = W;
     this.health = health;
-    // this.move = move;
     this.xMovement = move;
-    this.reverse = reverse;
     this.yMovement = this.H / 2;
   }
 
-  // xReverse(xMovement, yMovement) {
   xReverse() {
-    // if (this.x + xMovement > gameArea.xMax && this.reverse > 0) {
-
     if (this.x + this.xMovement > gameArea.xMax) {
-      // xMovement *= -1;
       this.x = gameArea.xMax;
       this.xMovement *= -1;
-      this.reverse = -1;
       this.y += this.yMovement;
-
-      // } else if (this.x - xMovement < gameArea.x && this.reverse < 0) {
     } else if (this.x - this.xMovement < gameArea.x) {
-      // xMovement *= -1;
       this.x = gameArea.x;
       this.xMovement *= -1;
-      this.reverse = 1;
       this.y += this.yMovement;
+    } else {
+      mushrooms.forEach((mushroom) => {
+        if (this.collisionDetection(mushroom)) {
+          this.xMovement *= -1;
+          this.y += this.yMovement;
+        }
+      });
     }
   }
   yReverse() {
@@ -64,12 +59,31 @@ class GameObject {
       this.yMovement *= -1;
     }
   }
-}
 
-class Segment extends GameObject {
-  constructor(x, y, objectImage, H, W, health, move, reverse) {
-    super(x, y, objectImage, H, W, health, move, reverse);
-    // this.reverse = reverse;
+  yEdgeDetection(thisIndex, thisArray) {
+    if (this.y < -10 || this.y > canvas.height) {
+      this.removeItem(thisIndex, thisArray);
+    }
+  }
+
+  removeItem(thisIndex, thisArray) {
+    thisArray.splice(thisIndex, 1);
+  }
+
+  now() {
+    let now = new Date();
+    return now.getTime();
+  }
+
+  timeTracker() {
+    return (this.fireRate = this.now() + this.pauseTimer);
+  }
+
+  collisionDetection(otherObject) {
+    const dist = Math.hypot(this.x - otherObject.x, this.y - otherObject.y);
+    if (dist - otherObject.H / 2 - this.H / 2 < 1) {
+      return true;
+    }
   }
 
   draw() {
@@ -78,32 +92,98 @@ class Segment extends GameObject {
     c.fillStyle = this.image;
     c.fill();
   }
-  update(centipedeIndex, segmentIndex) {
-    // var yMovement = this.H / 2;
-    // reverse X direction
-    // this.xReverse(this.move, this.yMovement);
+}
+
+class Segment extends GameObject {
+  constructor(x, y, objectImage, H, W, health, move) {
+    super(x, y, objectImage, H, W, health, move);
+  }
+
+  damage(segmentIndex) {
+    // convert segment to mushroom at location, then remove segment
+    let newMushroom = new Mushroom(
+      this.x,
+      this.y - 5,
+      "green",
+      this.H,
+      this.H,
+      4
+    );
+    mushrooms.push(newMushroom);
+    this.removeItem(segmentIndex, centipede);
+    console.log(centipede.length);
+    if (centipede.length < 1) {
+      levelProgression();
+    }
+  }
+
+  draw() {
+    c.beginPath();
+    c.arc(this.x, this.y, this.H / 2, 0, Math.PI * 2, false);
+    c.fillStyle = this.image;
+    c.fill();
+  }
+  update(segmentIndex) {
     this.xReverse();
-
-    // reverse Y direction
-    // this.yReverse(yMovement);
     this.yReverse();
-
-    // this.x += this.move * this.reverse;
-    this.x += this.xMovement * this.reverse;
+    this.x += this.xMovement;
     this.y = this.y;
-
     this.draw();
   }
 }
 
-class Archer extends GameObject {
+class Mushroom extends GameObject {
+  constructor(x, y, objectImage, H, W, health) {
+    super(x, y, objectImage, H, W, health);
+  }
+
+  damage(damageDelt, thisIndex) {
+    this.health -= damageDelt;
+    if (this.health < 0) {
+      this.removeItem(thisIndex, mushrooms);
+    }
+  }
+
+  update() {
+    super.draw();
+  }
+}
+
+class Projectile extends GameObject {
   constructor(x, y, objectImage, H, W, health, move) {
     super(x, y, objectImage, H, W, health, move);
-    this.fireRate = 10;
+  }
+
+  update(thisIndex, thisArray) {
+    this.yEdgeDetection(thisIndex, thisArray);
+    this.y -= this.xMovement; // moves projectile up screen
+    centipede.forEach((segment, segmentIndex) => {
+      if (segment.collisionDetection(this)) {
+        segment.damage(segmentIndex);
+        this.removeItem(thisIndex, thisArray);
+      }
+    });
+    mushrooms.forEach((mushroom, mushroomIndex) => {
+      if (mushroom.collisionDetection(this)) {
+        mushroom.damage(this.health, mushroomIndex);
+        this.removeItem(thisIndex, thisArray);
+      }
+    });
+    super.draw();
+  }
+}
+
+class Archer extends GameObject {
+  constructor(x, y, objectImage, H, W, health) {
+    super(x, y, objectImage, H, W, health);
+    this.fireRate = 0; // interval between firing, now + pauseTimer
+    this.pauseTimer = 400; // higher number = slower rate of fire
+    this.projectiles = [];
   }
   controller() {
     if (playerArea.x && playerArea.y) {
       // keeps player inside game area
+      // player moves by mouse
       player.x = playerArea.x;
       if (player.x < gameArea.x) {
         player.x = gameArea.x;
@@ -118,68 +198,16 @@ class Archer extends GameObject {
         player.y = gameArea.yMax;
       }
     }
+  }
 
-    //   // move player left
-    //   if (keys["KeyA"] || keys["ArrowLeft"]) {
-    //     this.image.src = playerImage[1];
-    //     this.x -= this.speed;
-    //   }
-    //   // move player right
-    //   if (keys["KeyD"] || keys["ArrowRight"]) {
-    //     this.image.src = playerImage[2];
-    //     this.x += this.speed;
-    //   }
-    //   if (keys["KeyS"]) {
-    //     if (this.now() > this.fireTimer) {
-    //       if (this.nukes > 0) {
-    //         this.projectiles.push(
-    //           new Projectile(
-    //             this.x,
-    //             this.y,
-    //             10, //size
-    //             "yellow",
-    //             this.projectileSpeed,
-    //             0, // damage
-    //             4 // owner
-    //           )
-    //         );
-    //         let nukeLaunch = new Audio("assets/nukeLaunch");
-    //         nukeLaunch.volume = 0.6;
-    //         nukeLaunch.play();
-    //         this.nukes--;
-    //         this.fireTimer = this.timeTracker();
-    //         displayNukes(this.nukes);
-    //       }
-    //     }
-    //   }
-    //   // pause feature
-    //   if (keys["KeyP"]) {
-    //     cancelAnimationFrame(timeStamp);
-    //     pause();
-    // }
-
-    //   // player fire
-    //   if (keys["Space"]) {
-    //     // check for Rapid Fire and adjust fire rate if present
-    //     if (this.now() > this.fireTimer) {
-    //       // play sound when end game
-    //       let playerFire = new Audio("assets/playerFire");
-    //       playerFire.volume = 0.6;
-    //       playerFire.play();
-    //       this.projectiles.push(
-    //         new Projectile(
-    //           this.x,
-    //           this.y,
-    //           this.projectilesize,
-    //           this.projectileColor,
-    //           this.projectileSpeed,
-    //           this.projectileDamage,
-    //           6
-    //         )
-    //       );
-    //       this.fireTimer = this.timeTracker();
-    //     }
-    //   }
+  // player fires with mouse click
+  fire() {
+    if (this.now() > this.fireRate) {
+      this.projectiles.push(
+        new Projectile(this.x, this.y, randomColor(), 5, 5, 1, 7)
+      );
+      this.fireRate = this.timeTracker();
+    }
   }
 
   draw() {
@@ -196,23 +224,25 @@ class Archer extends GameObject {
 }
 
 let gameArea;
-let centipedes;
+let centipede;
+let mushrooms;
 let lastRender;
 // let delta;
-let numOfCentipedes;
 let numOfSegments;
 let highScore = 0;
 let player;
+let keys;
 
 function init() {
   // delta = 0;
-  centipedes = [];
-  numOfCentipedes = 1;
+  keys = [];
+  centipede = [];
+  mushrooms = [];
   numOfSegments = 15;
   gameArea = new Pane(0.2, 0.8, 0.1, 0.85, c); // the pane the playable game happens in
   playerArea = new Pane(0.2, 0.8, 0.6, 0.85, c); // the area the player can move in
   // lastRender = Date.now();
-  createEnemies(numOfCentipedes, numOfSegments);
+  createEnemies(numOfSegments);
   player = createPlayer();
   animate();
 }
@@ -235,29 +265,22 @@ function saveHighScore(score) {
   }
 }
 
-function createEnemies(numOfCentipedes, numOfSegments) {
+function createEnemies(numOfSegments) {
   var startingX = gameArea.xMax - 30;
   var startingY = gameArea.y + 30;
   var segment;
-  for (var e = 0; e < numOfCentipedes; e++) {
-    startingY;
-    var newCentipede = [];
-    for (var i = 0; i < numOfSegments; i++) {
-      segment = new Segment(
-        startingX, // starting x location
-        startingY, // starting y location
-        randomColor(), // to be replaced w/image later
-        30, // height
-        30, // width
-        30, // health
-        6, // xMovement speed
-        1 // used to reverse direction
-      );
-      newCentipede.push(segment);
-
-      startingX -= 30;
-    }
-    centipedes.push(newCentipede);
+  for (var i = 0; i < numOfSegments; i++) {
+    segment = new Segment(
+      startingX, // starting x location
+      startingY, // starting y location
+      randomColor(), // to be replaced w/image later
+      30, // height
+      30, // width
+      30, // health
+      6 // xMovement speed
+    );
+    centipede.push(segment);
+    startingX -= 30;
   }
 }
 
@@ -268,7 +291,11 @@ function createPlayer() {
   return player;
 }
 
-function updateCentipede() {}
+function levelProgression() {
+  setTimeout(() => {
+    createEnemies(numOfSegments);
+  }, 1000);
+}
 
 function animate() {
   c.fillStyle = "black";
@@ -276,11 +303,19 @@ function animate() {
   // delta = Date.now() - lastRender;
   // lastRender = Date.now();
 
-  centipedes.forEach((centipede, centipedeIndex) => {
-    centipede.forEach((segment, segmentIndex) => {
-      segment.update(centipedeIndex, segmentIndex);
-    });
+  player.controller();
+  player.projectiles.forEach((projectile, index) => {
+    projectile.update(index, player.projectiles);
   });
+
+  mushrooms.forEach((mushroom) => {
+    mushroom.update();
+  });
+
+  centipede.forEach((segment, segmentIndex) => {
+    segment.update(segmentIndex);
+  });
+
   player.update();
   requestAnimationFrame(animate);
 }
@@ -289,5 +324,8 @@ function animate() {
 addEventListener("mousemove", (e) => {
   playerArea.x = e.pageX;
   playerArea.y = e.pageY;
+});
+addEventListener("mousedown", () => {
+  player.fire();
 });
 init();
