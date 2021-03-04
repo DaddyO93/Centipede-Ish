@@ -101,17 +101,8 @@ class Segment extends GameObject {
 
   damage(segmentIndex) {
     // convert segment to mushroom at location, then remove segment
-    let newMushroom = new Mushroom(
-      this.x,
-      this.y - 5,
-      "green",
-      this.H,
-      this.H,
-      4
-    );
-    mushrooms.push(newMushroom);
+    generateMushroom(this.x, this.y - 5, "brown", 4);
     this.removeItem(segmentIndex, centipede);
-    console.log(centipede.length);
     if (centipede.length < 1) {
       levelProgression();
     }
@@ -128,6 +119,10 @@ class Segment extends GameObject {
     this.yReverse();
     this.x += this.xMovement;
     this.y = this.y;
+    if (this.collisionDetection(player)) {
+      console.log("game over");
+      cancelAnimationFrame(timeStamp);
+    }
     this.draw();
   }
 }
@@ -177,7 +172,7 @@ class Archer extends GameObject {
   constructor(x, y, objectImage, H, W, health) {
     super(x, y, objectImage, H, W, health);
     this.fireRate = 0; // interval between firing, now + pauseTimer
-    this.pauseTimer = 400; // higher number = slower rate of fire
+    this.pauseTimer = 200; // higher number = slower rate of fire
     this.projectiles = [];
   }
   controller() {
@@ -209,6 +204,8 @@ class Archer extends GameObject {
       this.fireRate = this.timeTracker();
     }
   }
+
+  damage() {}
 
   draw() {
     c.beginPath();
@@ -243,18 +240,19 @@ function init() {
   playerArea = new Pane(0.2, 0.8, 0.6, 0.85, c); // the area the player can move in
   // lastRender = Date.now();
   createEnemies(numOfSegments);
+  createStartingMushrooms(25);
   player = createPlayer();
   animate();
 }
 
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (min - max + 1)) + min;
+function randomInt(max) {
+  return Math.random() * max;
 }
 
 function randomColor() {
-  var r = randomInt(0, 255) * -1;
-  var g = randomInt(0, 255) * -1;
-  var b = randomInt(0, 255) * -1;
+  var r = randomInt(255);
+  var g = randomInt(255);
+  var b = randomInt(255);
   var rgb = "rgb(" + r + "," + g + "," + b + ")";
   return rgb;
 }
@@ -277,7 +275,7 @@ function createEnemies(numOfSegments) {
       30, // height
       30, // width
       30, // health
-      6 // xMovement speed
+      5 // xMovement speed
     );
     centipede.push(segment);
     startingX -= 30;
@@ -291,6 +289,32 @@ function createPlayer() {
   return player;
 }
 
+function generateMushroom(mushroomX, mushroomY, mushroomImage, life) {
+  let newMushroom = new Mushroom(
+    mushroomX,
+    mushroomY,
+    mushroomImage,
+    20,
+    20,
+    life
+  );
+  mushrooms.push(newMushroom);
+}
+
+function createStartingMushrooms(numOfMushrooms) {
+  for (let i = 0; i < numOfMushrooms; i++) {
+    let mushroomX = gameArea.x + randomInt(gameArea.xMax - gameArea.x);
+    let mushroomY =
+      gameArea.y + 50 + randomInt(gameArea.yMax - gameArea.y - 50);
+    generateMushroom(
+      mushroomX,
+      mushroomY,
+      "brown", // to be replaced with image
+      4 // health
+    );
+  }
+}
+
 function levelProgression() {
   setTimeout(() => {
     createEnemies(numOfSegments);
@@ -300,6 +324,7 @@ function levelProgression() {
 function animate() {
   c.fillStyle = "black";
   c.fillRect(0, 0, canvas.width, canvas.height);
+  timeStamp = requestAnimationFrame(animate);
   // delta = Date.now() - lastRender;
   // lastRender = Date.now();
 
@@ -317,8 +342,16 @@ function animate() {
   });
 
   player.update();
-  requestAnimationFrame(animate);
 }
+
+// Change to WASD for movement and spacebar for fire
+// addEventListener("keydown", (event) => {
+//   keys[event.code] = true;
+// });
+// addEventListener("keyup", (event) => {
+//   keys[event.code] = false;
+//   player.image.src = playerImage[0];
+// });
 
 // to detect mouse movement
 addEventListener("mousemove", (e) => {
