@@ -1,29 +1,76 @@
 <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 <!-- <link rel="stylesheet" href="style.css"> -->
 
-<!-- <div class="m-2 text-light">
-    <span>Score: </span>
-    <span id="scoreElement">0</span>
-    <span class="ml-4">Extra Lives: </span>
-    <span id="extraLivesElement">0</span>
+<div class="m-2 text-white block absolute left-0 top-0 font-mono">
+    <span class="block">
+        <span>High Score:</span>
+        <span id="highScoreElement"></span>
+    </span>
+    <span class="block">
+        <span>Score: </span>
+        <span id="scoreElement">0</span>
+    </span>
+    <span class="block">
+        <span>Level: </span>
+        <span id="levelElement">1</span>
+    </span>
 </div>
 
-<div id="modalElement" class="modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Centipede-JS</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+<!-- <div class="fixed inset-0 flex items-center justify-center" id="pauseModalElement">
+    <div class="bg-white max-w-md 2-100 p-6 text-center rounded">
+        <h1 class="text-gray-700 mb-4 text-5xl font-extrabold">Game Paused</h1>
+        <div>
+            <button class="bg-green-800 text-white w-100 p-3 rounded-full" id="pauseGameButton">Play Game</button>
+        </div>
+    </div>
+</div> -->
+
+<!-- <div class="fixed inset-0 flex items-center justify-center" id="pauseModalElement">
+    <div class="bg-white max-w-md 2-100 p-6 text-center rounded">
+        <h1 class="text-gray-700 mb-4 text-5xl font-extrabold">Game Over</h1>
+        <div>
+            <button class="bg-green-800 text-white w-100 p-3 rounded-full" id="pauseGameButton">Play Again</button>
+        </div>
+    </div>
+</div> -->
+
+<!-- <div class="fixed inset-0 flex items-center justify-center" id="startModalElement">
+    <div class="bg-white w-1/3 p-6 text-center rounded">
+        <h1 class="text-gray-700 mb-4 text-5xl font-extrabold">Centipede-ish</h1> -->
+        <!-- <p class="text-gray-700 mb-2 text-sm font-semibold">They have come for our cows once more, and we've had enough! We created a prototype ship to fight them off, and you are the only pilot dumb enough... I mean, good enough, to fend them off. We are counting on you to save our burgers. Now get out there and hold off that endless wave of UFOs. And, good luck (you'll need it)!</p>
+        <div class="grid grid-cols-2 gap-2 place-items-auto">
+            <div>
+                <h2 class="text-gray-700 mb-4 text-lg font-bold">Instructions</h2>
+                <p class="text-gray-700 mb-0 text-sm font-semibold">A or LeftArrow</p>
+                <p class="text-gray-700 mb-2 text-sm">Move Left</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold">D or RightArrow</p>
+                <p class="text-gray-700 mb-2 text-sm">Move Right</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold">Spacebar</p>
+                <p class="text-gray-700 mb-2 text-sm">Fire</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold">S</p>
+                <p class="text-gray-700 mb-2 text-sm">Launch a Nuke</p>                
+                <p class="text-gray-700 mb-0 text-sm font-semibold">P</p>
+                <p class="text-gray-700 mb-2 text-sm">Pause</p>
             </div>
-            <div class="modal-body">
-                <h5>Score: </h5>
-                <h5 id="bigHighScore">0</h5>
+            <div>
+                <h2 class="text-gray-700 mb-4 text-lg font-bold">Bonus Drops</h2>
+                <p class="text-gray-700 text-sm mb-0 font-semibold"><img class='inline-block ml-2'
+                        style='width:35px;height:35px;' src="assets/extraLife.png" /> = Extra Life</p>
+                <p class="text-gray-700 mb-4 text-xs">(for living a little longer)</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
+                        style='width:35px;height:35px;' src="assets/rapidFire.png" /> = Rapid Fire</p>
+                <p class="text-gray-700 mb-4 text-xs">(for lots of 'pew, pew')</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
+                        style='width:35px;height:35px;' src="assets/speedBoost.png" /> = Speed Boost</p>
+                <p class="text-gray-700 mb-4 text-xs">(for more zoomies)</p>
+                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
+                        style='width:30px;height:30px;' src="assets/nuke.png" /> = Nuke</p>
+                <p class="text-gray-700 mb-4 text-xs">(for really big Booms)</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="startGameButton">Play</button>
-            </div>
+        </div> -->
+
+        <!-- <div>
+            <button class="bg-green-800 text-white w-100 p-3 rounded-full" id="startGameButton">Start Game</button>
         </div>
     </div>
 </div> -->
