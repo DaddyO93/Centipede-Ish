@@ -52,7 +52,7 @@ class GameObject {
     }
   }
   yReverse() {
-    let bottom = gameArea.yMax + this.H;
+    let bottom = gameArea.yMax;
     let top = gameArea.y;
     if (this.inGame) {
       // once in play area, moves up and down screen
@@ -68,7 +68,7 @@ class GameObject {
   }
 
   yEdgeDetection(thisIndex, thisArray) {
-    if (this.y < -10 || this.y > canvas.height) {
+    if (this.y < -10 || this.y > gameArea.yMax) {
       this.removeItem(thisIndex, thisArray);
     }
   }
@@ -90,6 +90,10 @@ class GameObject {
 
   timeTracker(timer) {
     return this.now() + timer;
+  }
+
+  leaveMushroom() {
+    generateMushroom(this.x, this.y - 5);
   }
 
   collisionDetection(otherObject) {
@@ -116,7 +120,7 @@ class Segment extends GameObject {
 
   damage(segmentIndex) {
     // convert segment to mushroom at location, then remove segment
-    generateMushroom(this.x, this.y - 5, "brown", 4);
+    this.leaveMushroom();
     this.removeItem(segmentIndex, centipede);
     player.score(this.value);
     if (centipede.length < 1) {
@@ -130,7 +134,7 @@ class Segment extends GameObject {
     c.fillStyle = this.image;
     c.fill();
   }
-  update(segmentIndex) {
+  update() {
     this.xReverse();
     this.yReverse();
     this.x += this.xMovement;
@@ -142,33 +146,94 @@ class Segment extends GameObject {
   }
 }
 
+class Beetle extends GameObject {
+  constructor(x, y, objectImage, H, W, health) {
+    super(x, y, objectImage, H, W, health);
+    this.movement = 8;
+    this.xMovement = randomInt(10, -10);
+    this.value = 300;
+  }
+  damage(beetleIndex) {
+    // convert beetle to mushroom at location, then remove beetle
+    this.leaveMushroom();
+    this.removeItem(beetleIndex, beetles);
+    player.score(this.value);
+  }
+
+  update(thisIndex) {
+    this.y += this.movement;
+    this.x += this.xMovement;
+    this.xReverse();
+    this.yEdgeDetection(thisIndex, beetles);
+    if (this.collisionDetection(player)) {
+      player.damage();
+    }
+    super.draw();
+  }
+}
+
+class Ant extends GameObject {
+  constructor(x, y, objectImage, H, W, health) {
+    super(x, y, objectImage, H, W, health);
+    this.movement = 11;
+    this.value = 400;
+    this.trailTimer = 0;
+  }
+
+  damage(antIndex) {
+    // convert ant to mushroom at location, then remove ant
+    this.leaveMushroom();
+    this.removeItem(antIndex, ants);
+    player.score(this.value);
+  }
+
+  trail() {
+    if (this.trailTimer > 3) {
+      this.leaveMushroom();
+      this.trailTimer = 0;
+    } else {
+      this.trailTimer += randomInt(1);
+    }
+  }
+
+  update(thisIndex) {
+    this.y += this.movement;
+    this.yEdgeDetection(thisIndex, ants);
+    if (this.collisionDetection(player)) {
+      player.damage();
+    }
+    this.trail();
+    super.draw();
+  }
+}
+
 class Spider extends GameObject {
   constructor(x, y, objectImage, H, W, health) {
     super(x, y, objectImage, H, W, health);
     this.yMovement = randomInt(6, 3);
     this.movement = randomInt(6, 3);
-    this.value = 200;
+    this.value = 500;
   }
 
   spiderMovement() {
-    var top = gameArea.yMax - 400;
+    var top = gameArea.yMax - randomInt(300, 100);
     if (this.y > gameArea.yMax || this.y < top) {
       this.yMovement *= -1;
     }
     this.y += this.yMovement;
-    this.x += this.movement;
+    this.x += this.movement + randomInt(8, -8);
   }
 
   damage(spiderIndex) {
     // convert spider to mushroom at location, then remove spider
-    generateMushroom(this.x, this.y - 5, "brown", 4);
+    this.leaveMushroom();
     this.removeItem(spiderIndex, spiders);
     player.score(this.value);
   }
 
-  update(thisIndex, thisArray) {
+  update(thisIndex) {
     this.spiderMovement();
-    this.xEdgeDetection(thisIndex, thisArray);
+    this.xEdgeDetection(thisIndex, spiders);
     if (this.collisionDetection(player)) {
       player.damage();
     }
@@ -220,20 +285,16 @@ class Projectile extends GameObject {
         spider.damage(spiderIndex);
       }
     });
-    super.draw();
-  }
-}
-
-class BonusDrop extends GameObject {
-  constructor(x, y, objectImage, H, W, health, move) {
-    super(x, y, objectImage, H, W, health, move);
-  }
-  update(thisIndex, thisArray) {
-    this.x += this.move;
-    this.yEdgeDetection(thisIndex, thisArray);
-    if (this.collisionDetection(player)) {
-      duration = this.timeTracker(200);
-    }
+    beetles.forEach((beetle, beetleIndex) => {
+      if (beetle.collisionDetection(this)) {
+        beetle.damage(beetleIndex);
+      }
+    });
+    ants.forEach((ant, antIndex) => {
+      if (ant.collisionDetection(this)) {
+        ant.damage(antIndex);
+      }
+    });
     super.draw();
   }
 }
@@ -301,16 +362,12 @@ class Archer extends GameObject {
   }
 
   damage() {
-    saveHighScore(score);
-    console.log("game over");
-    cancelAnimationFrame(timeStamp);
+    gameOver();
   }
 
   score(value) {
     score += value;
-    scoreElement.innerHTML = score;
-    highScore = saveHighScore(score);
-    highScoreElement.innerHTML = highScore;
+    uiUpdate();
   }
 
   draw() {
@@ -329,6 +386,8 @@ let gameArea;
 let centipede;
 let mushrooms;
 let spiders;
+let beetles;
+let ants;
 let numOfSegments;
 let highScore = 0;
 let player;
@@ -336,40 +395,26 @@ let keys;
 let shoot;
 let score;
 let level;
+let insectInterval;
+let pauseRelay;
 
 function init() {
   keys = [];
   centipede = [];
   mushrooms = [];
   spiders = [];
-  // enemyList = [
-  //   [gameArea.x, gameArea.yMax - randomInt(100), "gray", 20, 20, 1], // spider - moves left to right while moving up and down - leaves poison arrows
-  //   [
-  //     gameArea.y,
-  //     gameArea.x + randomInt(gameArea.xMax - gameArea.x),
-  //     "brown",
-  //     20,
-  //     20,
-  //     1,
-  //   ], // beetle - moves diagonally in straight line - leaves extra life
-  //   [
-  //     gameArea.y,
-  //     gameArea.x + randomInt(gameArea.xMax - gameArea.x),
-  //     "red",
-  //     20,
-  //     20,
-  //     1,
-  //   ], // ant - moves from top to bottom - leaves rapid fire
-  // ];
+  beetles = [];
+  ants = [];
+  insectInterval = 9995;
   numOfSegments = 15;
-  gameArea = new Pane(0.2, 0.8, 0.1, 0.85, c); // the pane the playable game happens in
-  playerArea = new Pane(0.2, 0.8, 0.6, 0.85, c); // the area the player can move in
+  // gameArea = new Pane(0.2, 0.8, 0.1, 0.85, c); // the pane the playable game happens in
+  // playerArea = new Pane(0.2, 0.8, 0.6, 0.85, c); // the area the player can move in
   createCentipede(numOfSegments);
   createStartingMushrooms(25);
-  createSpider();
   player = createPlayer();
   score = 0;
   level = 1;
+  pauseRelay = false;
 }
 
 function randomInt(max, min = 0) {
@@ -389,6 +434,20 @@ function saveHighScore(score) {
     highScore = score;
   }
   return highScore;
+}
+
+function checkForEnemies() {
+  var randNum = randomInt(10000);
+  if (randNum > insectInterval) {
+    var randInsect = Math.floor(randomInt(3));
+    if (randInsect == 0) {
+      createSpider();
+    } else if (randInsect == 1) {
+      createBeetle();
+    } else {
+      createAnt();
+    }
+  }
 }
 
 function createCentipede(numOfSegments) {
@@ -413,7 +472,7 @@ function createCentipede(numOfSegments) {
 function createSpider() {
   let newSpider = new Spider(
     gameArea.x,
-    gameArea.yMax - randomInt(100),
+    gameArea.yMax - randomInt(500, 100),
     "gray",
     20,
     20,
@@ -422,11 +481,30 @@ function createSpider() {
   spiders.push(newSpider);
 }
 
-function checkForEnemies() {
-  var randNum = randomInt(10000);
-  if (randNum > 9995) {
-    createSpider();
-  }
+function createBeetle() {
+  var startX = gameArea.xMax - gameArea.x;
+  let newBeetle = new Beetle(
+    gameArea.x + randomInt(startX),
+    gameArea.y - 30,
+    "green",
+    20,
+    20,
+    1
+  );
+  beetles.push(newBeetle);
+}
+
+function createAnt() {
+  var startX = gameArea.xMax - gameArea.x;
+  let newAnt = new Ant(
+    gameArea.x + randomInt(startX),
+    gameArea.y - 30,
+    "red",
+    20,
+    20,
+    1
+  );
+  ants.push(newAnt);
 }
 
 function createPlayer() {
@@ -444,15 +522,8 @@ function createPlayer() {
   return player;
 }
 
-function generateMushroom(mushroomX, mushroomY, mushroomImage, life) {
-  let newMushroom = new Mushroom(
-    mushroomX,
-    mushroomY,
-    mushroomImage,
-    20,
-    20,
-    life
-  );
+function generateMushroom(mushroomX, mushroomY) {
+  let newMushroom = new Mushroom(mushroomX, mushroomY, "brown", 20, 20, 4);
   mushrooms.push(newMushroom);
 }
 
@@ -473,14 +544,32 @@ function createStartingMushrooms(numOfMushrooms) {
 function levelProgression() {
   level++;
   numOfSegments++;
-  levelElement.innerHTML = level;
+  insectInterval -= 5;
+  uiUpdate();
   setTimeout(() => {
     createCentipede(numOfSegments);
   }, 1000);
 }
 
+function uiUpdate() {
+  levelElement.innerHTML = level;
+  scoreElement.innerHTML = score;
+  highScoreElement.innerHTML = highScore;
+}
+
 function pause() {
+  cancelAnimationFrame(timeStamp);
   pauseModalElement.style.display = "flex";
+  pauseRelay = false;
+}
+
+function gameOver() {
+  cancelAnimationFrame(timeStamp);
+  gameOverModalElement.style.display = "flex";
+  gameOverHighScoreElement.innerHTML = "";
+  gameOverScoreElement.innerHTML = "";
+  gameOverHighScoreElement.innerHTML += highScore;
+  gameOverScoreElement.innerHTML += score;
 }
 
 function animate() {
@@ -503,11 +592,27 @@ function animate() {
 
   checkForEnemies();
   spiders.forEach((spider, spiderIndex) => {
-    spider.update(spiderIndex, spiders);
+    spider.update(spiderIndex);
+  });
+  beetles.forEach((beetle, beetleIndex) => {
+    beetle.update(beetleIndex);
+  });
+  ants.forEach((ant, antIndex) => {
+    ant.update(antIndex);
   });
 
   player.update();
 }
+
+gameArea = new Pane(0.2, 0.8, 0.1, 0.85, c); // the pane the playable game happens in
+playerArea = new Pane(0.2, 0.8, 0.6, 0.85, c); // the area the player can move in
+
+addEventListener("keydown", (event) => {
+  keys[event.code] = true;
+});
+addEventListener("keyup", (event) => {
+  keys[event.code] = false;
+});
 
 // to detect mouse movement
 addEventListener("mousemove", (e) => {
@@ -521,18 +626,36 @@ addEventListener("mouseup", () => {
   shoot = false;
 });
 
-// startModalElement.style.display = "flex";
-// pauseModalElement.style.display = "none";
+pauseModalElement.style.display = "none";
+gameOverModalElement.style.display = "none";
+startModalElement.style.display = "flex";
 
-// pauseModalElement.addEventListener("click", () => {
-//   pauseModalElement.style.display = "none";
-//   timeStamp = 0;
-//   animate();
-// });
+addEventListener("keypress", (e) => {
+  if (e.code == "KeyP") {
+    if (pauseRelay) {
+      pauseModalElement.style.display = "none";
+      timeStamp = 0;
+      animate();
+      pauseRelay = false;
+    } else {
+      cancelAnimationFrame(timeStamp);
+      pauseModalElement.style.display = "flex";
+      pauseRelay = true;
+    }
+  }
+});
+
+restartGameButton.addEventListener("click", () => {
+  gameOverModalElement.style.display = "none";
+  highScore = saveHighScore(score);
+  init();
+  uiUpdate();
+  animate();
+});
 
 // start game on clicking "start game" button
-// startGameButton.addEventListener("click", () => {
-//   startModalElement.style.display = "none";
-init();
-animate();
-// });
+startGameButton.addEventListener("click", () => {
+  startModalElement.style.display = "none";
+  init();
+  animate();
+});
