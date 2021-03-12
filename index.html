@@ -1,7 +1,7 @@
 <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
-<div class="m-4 text-white block absolute left-0 top-0 font-mono">
+<div class="m-4 text-white block absolute left-0 top-0">
     <span class="block">
         <span>High Score:</span>
         <span id="highScoreElement">0</span>
@@ -16,7 +16,7 @@
     </span>
 </div>
 
-<div class="mr-4 text-white block absolute right-0 top-0 font-mono">
+<div class="mr-4 text-white block absolute right-0 top-0">
     <span class="text-xl font-extrabold">Point Value</span>
     <span class="block"><span id="mushroomImage"></span> Mushroom - 10</span>
     <span class="block"><span id="centipedeImage"></span> Centipede - 100</span>
@@ -53,43 +53,37 @@
 </div>
 
 <div class="fixed inset-0 flex items-center justify-center" id="startModalElement">
-    <div class="bg-gray-200 shadow-lg w-1/3 p-6 text-center rounded">
-        <h1 class="text-gray-700 mb-4 text-5xl font-extrabold">Centipede-ish</h1>
-        <!-- <p class="text-gray-700 mb-2 text-sm font-semibold">They have come for our cows once more, and we've had enough! We created a prototype ship to fight them off, and you are the only pilot dumb enough... I mean, good enough, to fend them off. We are counting on you to save our burgers. Now get out there and hold off that endless wave of UFOs. And, good luck (you'll need it)!</p>
-        <div class="grid grid-cols-2 gap-2 place-items-auto">
-            <div>
-                <h2 class="text-gray-700 mb-4 text-lg font-bold">Instructions</h2>
-                <p class="text-gray-700 mb-0 text-sm font-semibold">A or LeftArrow</p>
-                <p class="text-gray-700 mb-2 text-sm">Move Left</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold">D or RightArrow</p>
-                <p class="text-gray-700 mb-2 text-sm">Move Right</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold">Spacebar</p>
-                <p class="text-gray-700 mb-2 text-sm">Fire</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold">S</p>
-                <p class="text-gray-700 mb-2 text-sm">Launch a Nuke</p>                
-                <p class="text-gray-700 mb-0 text-sm font-semibold">P</p>
-                <p class="text-gray-700 mb-2 text-sm">Pause</p>
-            </div>
-            <div>
-                <h2 class="text-gray-700 mb-4 text-lg font-bold">Bonus Drops</h2>
-                <p class="text-gray-700 text-sm mb-0 font-semibold"><img class='inline-block ml-2'
-                        style='width:35px;height:35px;' src="assets/extraLife.png" /> = Extra Life</p>
-                <p class="text-gray-700 mb-4 text-xs">(for living a little longer)</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
-                        style='width:35px;height:35px;' src="assets/rapidFire.png" /> = Rapid Fire</p>
-                <p class="text-gray-700 mb-4 text-xs">(for lots of 'pew, pew')</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
-                        style='width:35px;height:35px;' src="assets/speedBoost.png" /> = Speed Boost</p>
-                <p class="text-gray-700 mb-4 text-xs">(for more zoomies)</p>
-                <p class="text-gray-700 mb-0 text-sm font-semibold"><img class='inline-block ml-2'
-                        style='width:30px;height:30px;' src="assets/nuke.png" /> = Nuke</p>
-                <p class="text-gray-700 mb-4 text-xs">(for really big Booms)</p>
-            </div>
-        </div> -->
-
+    <div class="bg-gray-900 shadow-lg w-1/2 p-6 text-center rounded">
+        <h1 class="text-gray-100 mb-4 text-5xl font-extrabold">Centipede-ish</h1>
+        <p class="text-gray-100 mb-2 text-sm font-semibold text-justify tracking-wide">Long have your people lived in peace with the insects, co-existing in the Mushroom Forest. Then he came with his army. These were not like the others of your forest that you call friends. These are bent on your destruction.</p>
+        <p class="text-gray-100 mb-2 text-sm font-semibold text-justify tracking-wide">You have been tasked with defending your village against his armies. No one is better with the repeating crossbow than you; no one more agile or cunning.</p>
+        <p class="text-gray-100 mb-6 text-sm font-semibold tracking-wide">Hold the line! Defend your people!</p>
+    <div class="grid grid-cols-2 gap-2 place-items-auto">
         <div>
-            <button class="bg-red-900 text-white w-100 p-3 rounded-full font-extrabold" id="startGameButton">Start Game</button>
+            <h2 class="text-gray-100 mb-4 text-2xl font-bold">Instructions</h2>
+            <p class="text-gray-100 mb-2 text-sm font-semibold">Use the mouse to move</p>
+            <p class="text-gray-100 mb-2 text-sm font-semibold">Hold the Left-Button to fire</p>              
+            <p class="text-gray-100 mb-2 text-sm font-semibold">Press "P" to pause/un-pause</p>
+            <div class="mt-32">
+                <button class="bg-red-900 text-white w-100 p-3 rounded-full font-extrabold" id="startGameButton">Start Game</button>
+            </div>
         </div>
+        <div>
+            <h2 class="text-gray-100 mb-4 text-2xl font-bold">Descriptions</h2>
+            <p class="text-gray-100 text-sm mb-0 font-semibold"><span id="mushroomImage"></span> 10 Points</p>
+            <p class="text-gray-100 text-sm mb-2 text-justify tracking-wide">Mushrooms are the indiginous vegitation of our forrest. Fast growing, but able to be removed with multiple shots from your bow. They will spring up from the corpses of your enemies.</p>
+            <p class="text-gray-100 mb-0 text-sm font-semibold"><span id="centipedeImage"> 100 Points</p>
+            <p class="text-gray-100 text-sm mb-2 text-justify tracking-wide">Centipedes make up the foot-soldiers of the enemy. When hit, they continue as separate centipedes. They are relentless and will keep going until you are dead. Keep them in open ground to slow them down.</p>
+            <p class="text-gray-100 mb-0 text-sm font-semibold"><span id="beetleImage"> 300 Points</p>
+            <p class="text-gray-100 text-sm mb-2 text-justify tracking-wide">Beetles are fast-moving insects that will try to flank you.</p>
+            <p class="text-gray-100 mb-0 text-sm font-semibold"><span id="antImage"> 400 Points</p>                
+            <p class="text-gray-100 text-sm mb-2 text-justify tracking-wide">Ants are quick insects that plant mushrooms as they go to help the centipedes get to you faster. Watch out for them and destroy their work quickly.</p>
+            <p class="text-gray-100 mb-0 text-sm font-semibold"><span id="spiderImage"> 500 Points</p>
+            <p class="text-gray-100 text-sm mb-2 text-justify tracking-wide">Jittery and unpredicable. Spiders are dangerous foes, be on your guard!</p>
+        </div>
+    </div>
+
+
     </div>
 </div>
 

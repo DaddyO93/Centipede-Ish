@@ -149,7 +149,7 @@ class Segment extends GameObject {
 class Beetle extends GameObject {
   constructor(x, y, objectImage, H, W, health) {
     super(x, y, objectImage, H, W, health);
-    this.movement = 8;
+    this.movement = 7;
     this.xMovement = randomInt(10, -10);
     this.value = 300;
   }
@@ -175,7 +175,7 @@ class Beetle extends GameObject {
 class Ant extends GameObject {
   constructor(x, y, objectImage, H, W, health) {
     super(x, y, objectImage, H, W, health);
-    this.movement = 11;
+    this.movement = 9;
     this.value = 400;
     this.trailTimer = 0;
   }
@@ -221,7 +221,7 @@ class Spider extends GameObject {
       this.yMovement *= -1;
     }
     this.y += this.yMovement;
-    this.x += this.movement + randomInt(8, -8);
+    this.x += this.movement + randomInt(12, -12);
   }
 
   damage(spiderIndex) {
@@ -418,7 +418,7 @@ function init() {
 }
 
 function randomInt(max, min = 0) {
-  return Math.random(min) * max;
+  return Math.random() * (max - min) + min;
 }
 
 function randomColor() {
@@ -472,7 +472,7 @@ function createCentipede(numOfSegments) {
 function createSpider() {
   let newSpider = new Spider(
     gameArea.x,
-    gameArea.yMax - randomInt(500, 100),
+    gameArea.yMax - randomInt(300, 100),
     "gray",
     20,
     20,
@@ -523,7 +523,15 @@ function createPlayer() {
 }
 
 function generateMushroom(mushroomX, mushroomY) {
-  let newMushroom = new Mushroom(mushroomX, mushroomY, "brown", 20, 20, 4);
+  var tempNum = Math.floor(randomInt(20, 12));
+  let newMushroom = new Mushroom(
+    mushroomX,
+    mushroomY,
+    "brown",
+    tempNum,
+    tempNum,
+    4
+  );
   mushrooms.push(newMushroom);
 }
 
